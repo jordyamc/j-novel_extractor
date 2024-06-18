@@ -29,7 +29,7 @@ token_cookie = {}
 config_path = configdir("J-Novel Extractor")
 login_path = Path(config_path, "login.data")
 checked = []
-notification_token = config.get("NOTIFICATION_TOKEN", None)
+notification_token = config.get("NOTIFICATION_TOKEN", "")
 notifications = {}
 
 
@@ -37,7 +37,7 @@ def notify():
     global notifications
     if len(notifications) == 0:
         return
-    if notification_token is not None:
+    if notification_token:
         body = "**J-Novel Extractor**\n\n"
         changed = False
         for key in notifications:
