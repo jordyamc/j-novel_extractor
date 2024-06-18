@@ -1,0 +1,10 @@
+ebooklib
+beautifulsoup4
+requests
+pathvalidate
+bs4
+validators
+requests-html
+argparse
+playwright
+python-dotenv
