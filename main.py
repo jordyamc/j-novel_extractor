@@ -5,8 +5,8 @@ import json
 import os
 import validators
 import argparse
-import subprocess
 import dotenv
+import apprise
 from configdir import configdir
 from login import login, purge_token
 from pathlib import Path
@@ -14,7 +14,6 @@ from pathvalidate import sanitize_filepath
 from ebooklib import epub
 from bs4 import BeautifulSoup
 
-config = dotenv.dotenv_values(".env")
 parser = argparse.ArgumentParser(
     description="Downloads book parts from J-Novel and combine them into an epub book"
 )
@@ -23,13 +22,15 @@ parser.add_argument("-a", "--all", dest="auto_type", action="store_const", const
 parser.add_argument("-ac", "--all-catchup", dest="auto_type", action="store_const", const="catchup", help="Extract all catchup novels")
 parser.add_argument("-af", "--all-followed", dest="auto_type", action="store_const", const="follow", help="Extract all followed novels")
 parser.add_argument("-o", "--output", dest="output", default="output", type=pathlib.Path, help="Output directory")
+parser.add_argument("-e", "--env", dest="env", type=pathlib.Path, help="Specify the env file path")
 args = parser.parse_args()
 token_cookie = {}
 
 config_path = configdir("J-Novel Extractor")
 login_path = Path(config_path, "login.data")
 checked = []
-notification_token = config.get("NOTIFICATION_TOKEN", "")
+env_config = dotenv.dotenv_values(args.env or Path(__file__).parent.joinpath('.env'))
+notification_token = env_config.get("NOTIFICATION_TOKEN", "")
 notifications = {}
 
 
@@ -61,7 +62,9 @@ def notify():
                         body += vol_body
         if changed:
             body = body.replace('"', "'")
-            subprocess.run(f"apprise -i markdown -b \"{body}\" {notification_token}")
+            appobj = apprise.Apprise()
+            appobj.add(notification_token)
+            appobj.notify(body=body, body_format=apprise.common.NotifyFormat.MARKDOWN)
     notifications = {}
 
 
